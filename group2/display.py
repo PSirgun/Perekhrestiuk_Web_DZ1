@@ -44,7 +44,6 @@ class AddressBookConsoleInterface(MyFirstAbstarctClass):
                 selected_contact.birthday
             )
             print(result)
-
         else:
             return f"Contact with name {name} not found."
         
