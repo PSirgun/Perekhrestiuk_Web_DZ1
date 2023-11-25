@@ -68,28 +68,28 @@ class Phone(Field):
 
 class ObjPhones(FindContext):  
     def __init__(self):   
-        self.phones = []
+        self.values = []
 
     def add_phone(self, new_phone):
-        self.phones.append(new_phone)
+        self.values.append(new_phone)
 
     def edit_phone(self, old_phone: Phone, new_phone: Phone):
-        if any(phone.value == old_phone.value for phone in self.phones):
+        if any(phone.value == old_phone.value for phone in self.values):
             self.remove_phone(old_phone)
-            self.phones.append(new_phone)
+            self.values.append(new_phone)
 
 
     def remove_phone(self, phone_number: str):
-        for phone in self.phones:
+        for phone in self.values:
             if phone.value == phone_number.value:
-                self.phones.remove(phone)
+                self.values.remove(phone)
                 break
     
     def __str__(self) -> str:
-        return f'{self.phones}'
+        return f'{self.values}'
     
     def find_in(self, search_value):
-        return any(search_value in phone.value for phone in self.phones)
+        return any(search_value in phone.value for phone in self.values)
     
 class Birthday:
     def __init__(self, value):
@@ -182,10 +182,6 @@ class AddressBook(UserDict):
     def delete(self, name):
         if name in self.keys():
             self.pop(name)
-    
-    # def __iter__(self):
-    #     for contact in self.data:
-    #         yield {"name":self.data[contact].name.value, "phones":self.data[contact].phones.phones, "birthday":self.data[contact].birthday}
 
     def iterator(self, lines):
         if lines is None:

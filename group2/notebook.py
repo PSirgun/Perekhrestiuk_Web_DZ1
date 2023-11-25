@@ -2,8 +2,33 @@ from collections import UserDict, OrderedDict
 from pathlib import Path
 import pickle
 
-
 class NoteBook(UserDict):
+    
+    def find(self, title):
+        if title in self.keys():
+            found_rec = self.get(title)
+            return found_rec
+        raise KeyError
+    
+    def input_t(seld, prompt):
+        lines = []
+        print(prompt)
+        while True:
+            line = input()
+            if line.lower() == "save":
+                break
+            lines.append(line)
+        return "\n".join(lines)
+
+
+    def args_to_title(self, args=None):
+        if not args:
+            raise IndexError
+        title = " ".join(args)
+        if title not in self.data:
+            raise KeyError
+        return title
+
     def add_note(self, title, text, tags=None):
         if tags is None:
             tags = []
@@ -19,19 +44,17 @@ class NoteBook(UserDict):
     def delete_note(self, title=None):
         if title in self.data:
             del self.data[title]
-            return f"Note {title} has deleted"
         if not title:
             self.data.clear()
-            return "All notes have been deleted"
 
     def search_notes(self, keyword):
-        page = ""
+        page = []
         keyword = keyword.lower()
         for title, note in self.data.items():
             if keyword in title.lower() or any(
                 keyword in tag.lower() for tag in note["tags"]
             ):
-                page += self.__str__(title)
+                page.append(title)
         return page
 
     def sort_notes(self):
@@ -39,27 +62,7 @@ class NoteBook(UserDict):
             self.data.items(), key=lambda x: (-len(x[1]["tags"]), x[0])
         )
         self.data = OrderedDict(sorted_data)
-        return self.__str__()
 
-    def __iter__(self):
-        for title, note in self.data.items():
-            yield self.__str__(title)
-
-    def __str__(self, title_to_print=None):
-        if title_to_print:
-            note = self.data.get(title_to_print)
-            return "\n\033[34m<<<{}>>>\033[0m\n{}\n\033[34mtags:\033[0m {}\n".format(
-                title_to_print, note["text"], note["tags"]
-            )
-        else:
-            result = ""
-            for title, note in self.data.items():
-                result += (
-                    "\n\033[34m<<<{}>>>\033[0m\n{}\n\033[34mtags:\033[0m {}\n".format(
-                        title, note["text"], note["tags"]
-                    )
-                )
-            return result
 
     def load_data(self):
         file_name = "note.bin"

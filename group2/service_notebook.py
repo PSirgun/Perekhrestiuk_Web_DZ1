@@ -1,27 +1,11 @@
 from .notebook import NoteBook
+from . display import NoteBookConsoleInterface
 
 note_book = NoteBook()
 note_book.load_data()
+console_interface = NoteBookConsoleInterface(note_book)
 
 
-def input_t(prompt):
-    lines = []
-    print(prompt)
-    while True:
-        line = input()
-        if line.lower() == "save":
-            break
-        lines.append(line)
-    return "\n".join(lines)
-
-
-def args_to_title(args=None):
-    if not args:
-        raise IndexError
-    title = " ".join(args)
-    if title not in note_book:
-        raise KeyError
-    return title
 
 
 class KeywordError(Exception):
@@ -30,16 +14,16 @@ class KeywordError(Exception):
 
 def user_error(func):
     def inner(*args):
-        try:
+        # try:
             return func(*args)
-        except IndexError:
-            return "No title entered "
-        except KeywordError:
-            return "No keyword entered "
-        except TypeError:
-            return "Too much arguments"
-        except KeyError:
-            return "No notes with this name"
+        # except IndexError:
+        #     return "No title entered "
+        # except KeywordError:
+        #     return "No keyword entered "
+        # except TypeError:
+        #     return "Too much arguments"
+        # except KeyError:
+        #     return "No notes with this name"
 
     return inner
 
@@ -50,20 +34,19 @@ def func_add_note(*args):
     if not title:
         raise IndexError
     if title not in note_book:
-        input_text = input_t("Enter the text. Type 'save' to finish:")
+        input_text = note_book.input_t("Enter the text. Type 'save' to finish:")
         question = input("Want to add tags? (Y/N)")
         if question == "y".casefold():
-            tags_input = input_t("Input tags. Type 'save' to finish:")
+            tags_input = note_book.input_t("Input tags. Type 'save' to finish:")
             tags = ["#" + tag.strip() for tag in tags_input.split()]
         else:
             tags = []
         if tags:
             note_book.add_note(title, input_text, tags)
-            tags_str = " ".join(x for x in tags)
-            return f"New note with title: {title} and tags: {tags_str} was saved"  # тут напевно щось треба написати серйозніше
+            return console_interface.display_added_inf(title, tags)
         else:
             note_book.add_note(title, input_text)
-            return f"New note with {title} was saved"
+            return console_interface.display_added_inf(title)
     else:
         question = input(f"Note {title} already exist. Want to edit note? (Y/N)")
         if question == "y".casefold():
@@ -74,7 +57,7 @@ def func_add_note(*args):
 
 @user_error
 def func_edit_note(*args):
-    title = args_to_title(args)
+    title = note_book.args_to_title(args)
     text_note = note_book[title]["text"].split("\n")
     flag = False
     while True:
@@ -102,8 +85,8 @@ def func_edit_note(*args):
 
 @user_error
 def func_edit_tags(*args):
-    title = args_to_title(args)
-    input_new_tags = input_t("Input new tags. Type 'save' to finish:")
+    title = note_book.args_to_title(args)
+    input_new_tags = note_book.input_t("Input new tags. Type 'save' to finish:")
     new_tags = ["#" + tag.strip() for tag in input_new_tags.split()]
     note_book.edit_note(title, None, new_tags)
     return f"Tags in note {title} are updated"
@@ -111,8 +94,8 @@ def func_edit_tags(*args):
 
 @user_error
 def func_add_tags(*args):
-    title = args_to_title(args)
-    input_new_tags = input_t("Input new tags. Type 'save' to finish:")
+    title = note_book.args_to_title(args)
+    input_new_tags = note_book.input_t("Input new tags. Type 'save' to finish:")
     new_tags = ["#" + tag.strip() for tag in input_new_tags.split()]
     note_book[title]["tags"].extend(new_tags)
     return f"New tags were added to note {title}" 
@@ -120,22 +103,24 @@ def func_add_tags(*args):
 
 @user_error
 def func_show_notes():
-    return note_book
-
+    return console_interface.display_notes()
 
 @user_error
 def func_search_notes(*args):
+    result = ""
     keyword = " ".join(args)
     if not keyword:
         raise KeywordError
-
-    return note_book.search_notes(keyword)
+    search = note_book.search_notes(keyword)
+    for title in search:
+        result += f'{console_interface.display_one_note(title)}\n'
+    return result
 
 
 @user_error
 def func_sort_notes():
-    return note_book.sort_notes()
-
+    note_book.sort_notes()
+    return console_interface.display_notes()
 
 def func_save_notes():
     note_book.save_data()

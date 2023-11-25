@@ -36,7 +36,7 @@ def func_add(*args):
     contact = Record(name)
     contact.phones.add_phone(phone)
     book.add_record(contact) 
-    return f" Added {name} - {phone} to phone book "
+    return console_interface.display_added_inf(name.value, phone.value)
 
 @user_error
 def func_add_phone(*args):
@@ -44,7 +44,7 @@ def func_add_phone(*args):
     phone = Phone(args[1])
     contact = book.find(name.value)
     contact.phones.add_phone(phone)
-    return f"Phone {phone} added to contact {name} to phone book"
+    return console_interface.display_added_inf(name.value, phone.value)
 
 @user_error
 def func_edit_phone(*args):
@@ -52,14 +52,14 @@ def func_edit_phone(*args):
     old_phone = Phone(args[1])
     new_phone = Phone(args[2])
     book.find(name.value).phones.edit_phone(old_phone, new_phone)
-    return 
+    return console_interface.display_added_inf(name.value, new_phone=new_phone.value, old_phone=old_phone)
 
 @user_error
 def func_remove_phone(*args):
     name = Name(args[0])
     phone = Phone(args[1])
     book.find(name.value).phones.remove_phone(phone)
-
+    return console_interface.display_added_inf(name.value, old_phone=phone)
 # @user_error
 # def func_show_all(*args):
 #     line = ""
@@ -69,36 +69,32 @@ def func_remove_phone(*args):
 
 @user_error
 def func_show_all(*args):
-    console_interface.display_contacts()
-    return "End"
+    return console_interface.display_contacts()
 
 @user_error
 def func_show(*args):
     for page in book.iterator(int(args[0]) if args else None):
         for line in page:
-            print (line)
-            console_interface.display_one_contact(line)
+            print(console_interface.display_one_contact(line))
         print("End page\n")
     return "End phone book"
 
 @user_error
 def func_add_birthday(*args):
-    name = Name(args[0]).value
+    name = Name(args[0])
     bd = Birthday(args[1:])
     if book.find(name):
         contact:Record = book[name]
         contact.birthday.add_birthday(bd)
     else:
-        contact = Record(name)
-        contact.birthday.add_birthday(bd)
-        book.add_record(contact) 
-    return f" For {name} added birthday {bd.value.strftime('%d %m %Y')} to phone book "
+        raise AttributeError
+    return console_interface.display_added_inf(name, birthday=bd)
 
 @user_error
 def func_when_birthday(*args):
     name = Name(args[0]).value
     result = book.find(name).birthday.days_to_birthday()
-    return f"{result} to birthday {name}"
+    return console_interface.display_added_inf(name, days_to_bd=result)
 
 @user_error
 def func_find(*args):
